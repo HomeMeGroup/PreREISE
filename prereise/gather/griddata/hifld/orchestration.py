@@ -6,13 +6,18 @@ from powersimdata.input import const as psd_const
 from prereise.gather.griddata.hifld.const import powersimdata_column_defaults
 from prereise.gather.griddata.hifld.data_process.demand import assign_demand_to_buses
 from prereise.gather.griddata.hifld.data_process.generators import build_plant
+from prereise.gather.griddata.hifld.data_process.profiles import build_solar
 from prereise.gather.griddata.hifld.data_process.transmission import build_transmission
 
 
-def create_csvs(output_folder):
+def create_csvs(output_folder, nrel_email, nrel_api_key, solar_kwargs={}):
     """Process HIFLD source data to CSVs compatible with PowerSimData.
 
     :param str output_folder: directory to write CSVs to.
+    :param str nrel_email: email used to`sign up <https://developer.nrel.gov/signup/>`_.
+    :param str nrel_api_key: API key.
+    :param dict solar_kwargs: keyword arguments to pass to
+        :func:`prereise.gather.solardata.nsrdb.sam.retrieve_data_individual`.
     """
     # Process grid data from original sources
     branch, bus, substation, dcline = build_transmission()
@@ -30,6 +35,16 @@ def create_csvs(output_folder):
     # plant goes to plant and gencost
     outputs["gencost"] = plant[["c0", "c1", "c2", "interconnect"]].copy()
     outputs["plant"] = plant.drop(["c0", "c1", "c2"], axis=1)
+
+    # Use plant data to build profiles
+    profiles = {
+        "solar": build_solar(
+            nrel_email,
+            nrel_api_key,
+            outputs["plant"].query("type == 'solar'"),
+            **solar_kwargs,
+        ),
+    }
 
     # Fill in missing column values
     for name, defaults in powersimdata_column_defaults.items():
@@ -52,6 +67,7 @@ def create_csvs(output_folder):
         outputs[name] = outputs[name][col_names]
 
     # Save files
+    outputs.update(profiles)
     os.makedirs(output_folder, exist_ok=True)
     for name, df in outputs.items():
         df.to_csv(os.path.join(output_folder, f"{name}.csv"))
