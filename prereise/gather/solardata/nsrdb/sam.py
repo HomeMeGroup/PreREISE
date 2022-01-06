@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import PySAM.Pvwattsv7 as PVWatts
+import PySAM.Pvwattsv8 as PVWatts
 import PySAM.PySSC as pssc  # noqa: N813
 from tqdm import tqdm
 
