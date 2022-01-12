@@ -30,11 +30,12 @@ def build_solar(nrel_email, nrel_api_key, solar_plants, **solar_kwargs):
     """
     boolean_columns = ["Single-Axis Tracking?", "Dual-Axis Tracking?", "Fixed Tilt?"]
     float_columns = ["DC Net Capacity (MW)", "Nameplate Capacity (MW)", "Tilt Angle"]
-    # Load raw 'extra' table data, and join on plant & generating unit
+    # Load raw 'extra' table data, join on plant & generating unit, re-establish index
     extra_solar_data = get_eia_form_860(const.blob_paths["eia_form860_2019_solar"])
     full_data = solar_plants.merge(
         extra_solar_data, on=["Plant Code", "Generator ID"], suffixes=(None, "_extra")
     )
+    full_data.index = solar_plants.index
     # Process data to expected types for profile generation
     for col in float_columns:
         full_data[col] = full_data[col].map(floatify)
