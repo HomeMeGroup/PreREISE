@@ -74,11 +74,12 @@ def build_wind(wind_plants, download_directory, year):
         are floats.
     """
     default_hub_height = 262.467  # (262.467 ft = 80m)
-    # Load raw 'extra' table data, and join on plant & generating unit
+    # Load raw 'extra' table data, join on plant & generating unit, re-establish index
     extra_wind_data = get_eia_form_860(const.blob_paths["eia_form860_2019_wind"])
     full_data = wind_plants.merge(
         extra_wind_data, on=["Plant Code", "Generator ID"], suffixes=(None, "_extra")
     )
+    full_data.index = wind_plants.index
     # Process data to expected types for profile generation
     full_data["Turbine Hub Height (Feet)"] = (
         full_data["Turbine Hub Height (Feet)"].map(floatify).fillna(default_hub_height)
