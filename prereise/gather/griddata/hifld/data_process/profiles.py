@@ -57,3 +57,13 @@ def build_solar(nrel_email, nrel_api_key, solar_plants, **solar_kwargs):
         **solar_kwargs,
     )
     return profiles
+
+
+def build_hydro(eia_api_key, hydro_plants, **hydro_kwargs):
+    """Use plant-level data to build hydro profiles.
+
+    :return: (*pandas.DataFrame*) -- data frame of normalized power profiles. The index
+        is hourly timestamps for the profile year, the columns are plant IDs, the values
+        are floats.
+    """
+    
