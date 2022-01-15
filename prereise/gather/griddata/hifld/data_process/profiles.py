@@ -77,6 +77,7 @@ def build_hydro(eia_api_key, hydro_plants, year, **hydro_kwargs):
     # Build shapes for each region
     query_regions = set(hydro_plants["Balancing Authority Code"].unique())
     query_regions.add("US48")  # total U.S. hydro profile, to be used as a fall-back
+    hydro_kwargs["year"] = year
     generation = get_generation(eia_api_key, regions=query_regions, **hydro_kwargs)
     # Build shape for 'residual' region (lower 48, minus found regions)
     found_sum = generation.drop("US48", axis=1).sum(axis=1)

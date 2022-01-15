@@ -6,18 +6,33 @@ from powersimdata.input import const as psd_const
 from prereise.gather.griddata.hifld.const import powersimdata_column_defaults
 from prereise.gather.griddata.hifld.data_process.demand import assign_demand_to_buses
 from prereise.gather.griddata.hifld.data_process.generators import build_plant
-from prereise.gather.griddata.hifld.data_process.profiles import build_solar
+from prereise.gather.griddata.hifld.data_process.profiles import (
+    build_hydro,
+    build_solar,
+)
 from prereise.gather.griddata.hifld.data_process.transmission import build_transmission
 
 
-def create_csvs(output_folder, nrel_email, nrel_api_key, solar_kwargs={}):
+def create_csvs(
+    output_folder,
+    profile_year,
+    nrel_email,
+    nrel_api_key,
+    eia_api_key,
+    hydro_kwargs={},
+    solar_kwargs={},
+):
     """Process HIFLD source data to CSVs compatible with PowerSimData.
 
     :param str output_folder: directory to write CSVs to.
+    :param int/str year: year to generate profiles for.
     :param str nrel_email: email used to`sign up <https://developer.nrel.gov/signup/>`_.
     :param str nrel_api_key: API key.
+    :param str eia_api_key: API key.
     :param dict solar_kwargs: keyword arguments to pass to
         :func:`prereise.gather.solardata.nsrdb.sam.retrieve_data_individual`.
+    :param dict hydro_kwargs: keyword arguments to pass to
+        :func:`prereise.gather.hydrodata.eia.ftch_historical.get_generation`.
     """
     # Process grid data from original sources
     branch, bus, substation, dcline = build_transmission()
@@ -43,6 +58,12 @@ def create_csvs(output_folder, nrel_email, nrel_api_key, solar_kwargs={}):
             nrel_api_key,
             outputs["plant"].query("type == 'solar'"),
             **solar_kwargs,
+        ),
+        "hydro": build_hydro(
+            eia_api_key,
+            outputs["plant"].query("type == 'hydro'"),
+            profile_year,
+            **hydro_kwargs,
         ),
     }
 
