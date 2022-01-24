@@ -30,7 +30,8 @@ def parse_input_regions(available_regions, requested_regions):
             continue
         abbreviation_matches = {a for a in available_regions if f"({r})" in a}
         if len(abbreviation_matches) == 0:
-            raise ValueError(f"No region found for {r}")
+            print(f"No hydro data available for region {r}, skipping")
+            continue
         if len(abbreviation_matches) > 1:
             raise ValueError(f"Multiple regions found for {r}: {abbreviation_matches}")
         (single_match,) = abbreviation_matches  # unpack singleton set
